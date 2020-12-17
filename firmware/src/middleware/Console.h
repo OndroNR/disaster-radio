@@ -32,6 +32,8 @@ public:
     void usage();
     void getUsage();
     void uiUsage();
+    void wifiSSIDUsage();
+    void wifiPasswordUsage();
     void txpowerUsage();
     void lorafrqUsage();
     void sfUsage();
@@ -43,6 +45,8 @@ public:
     void get(std::vector<char *> args);
 
     void uiSet();
+    void wifiSSIDSet(std::vector<char *> args);
+    void wifiPasswordSet(std::vector<char *> args);
     void txpowerSet(std::vector<char *> args);
     void lorafrqSet(std::vector<char *> args);
     void sfSet(std::vector<char *> args);
