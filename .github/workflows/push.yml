@@ -27,29 +27,50 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
+
     - name: Build firmware
       working-directory: ./firmware
       run: pio run
     - name: Debug directory listing
       working-directory: ./firmware
       run: ls -la .pio/build/ttgo-lora32-v2/
-    - name: Archive firmware artifacts
+    - name: Archive artifact firmware.bin
       uses: actions/upload-artifact@v2
       with:
         name: TTGO-LORA-v2
         path: |
           firmware/.pio/build/ttgo-lora32-v2/firmware.bin
+        if-no-files-found: error
+    - name: Archive artifact partitions.bin
+      uses: actions/upload-artifact@v2
+      with:
+        name: TTGO-LORA-v2
+        path: |
           firmware/.pio/build/ttgo-lora32-v2/partitions.bin
+        if-no-files-found: error
+
+    - name: Archive artifact bootloader_dio_40m.bin
+      uses: actions/upload-artifact@v2
+      with:
+        name: TTGO-LORA-v2
+        path: |
           ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin
+        if-no-files-found: error
+    - name: Archive artifact boot_app0.bin
+      uses: actions/upload-artifact@v2
+      with:
+        name: TTGO-LORA-v2
+        path: |
           ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin
         if-no-files-found: error
+
     - name: Build filesystem
       working-directory: ./firmware
       run: pio run -t buildfs
     - name: Debug directory listing
       working-directory: ./firmware
       run: ls -la .pio/build/ttgo-lora32-v2/
-    - name: Archive filesystem artifact
+    - name: Archive artifact spiffs.bin
       uses: actions/upload-artifact@v2
       with:
         name: TTGO-LORA-v2
