@@ -29,6 +29,6 @@ gulp.task('build:html', function() {
 });
 
 
-gulp.task('build', ['build:js', 'build:css']);
+gulp.task('build', gulp.series('build:js', 'build:css'));
 
-gulp.task('watch', ['watch:js', 'watch:css']);
+gulp.task('watch', gulp.series('watch:js', 'watch:css'));

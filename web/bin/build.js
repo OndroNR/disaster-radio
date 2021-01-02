@@ -109,7 +109,10 @@ if (require.main === module) {
 } else {
 
   module.exports = {
-    build: build,
+    build: function(done, opts) {
+      build(opts);
+      return done();
+    },
 
     watch: function(opts) {
       opts = opts || opts;
