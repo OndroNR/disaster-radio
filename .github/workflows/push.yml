@@ -30,20 +30,29 @@ jobs:
     - name: Build firmware
       working-directory: ./firmware
       run: pio run
+    - name: Debug directory listing
+      working-directory: ./firmware
+      run: ls -la .pio/build/ttgo-lora32-v2/
+    - name: Archive firmware artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: TTGO-LORA-v2
+        path: |
+          firmware/.pio/build/ttgo-lora32-v2/firmware.bin
+          firmware/.pio/build/ttgo-lora32-v2/partitions.bin
+          ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin
+          ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin
+        if-no-files-found: error
     - name: Build filesystem
       working-directory: ./firmware
       run: pio run -t buildfs
     - name: Debug directory listing
       working-directory: ./firmware
       run: ls -la .pio/build/ttgo-lora32-v2/
-    - name: Archive artifacts
+    - name: Archive filesystem artifact
       uses: actions/upload-artifact@v2
       with:
         name: TTGO-LORA-v2
         path: |
-          firmware/.pio/build/ttgo-lora32-v2/firmware.bin
           firmware/.pio/build/ttgo-lora32-v2/spiffs.bin
-          firmware/.pio/build/ttgo-lora32-v2/partitions.bin
-          ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin
-          ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin
         if-no-files-found: error
