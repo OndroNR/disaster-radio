@@ -113,29 +113,37 @@ void setupWiFi()
   // format WiFi MAC address to string
   sprintf(nodeAddress, "%02x%02x%02x%02x", mac[2], mac[3], mac[4], mac[5]);
 
-#ifdef WIFI_SSID
-  Serial.printf(" --> Connecting to WiFi \"%s\"\n", WIFI_SSID);
-  for (int i = 0; i < WIFI_POLL_TRIES && WiFi.status() != WL_CONNECTED; i++)
-  {
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    delay(WIFI_POLL_DELAY);
-  }
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    ip = WiFi.localIP();
-    snprintf(ssid, sizeof(ssid), "%s", WIFI_SSID);
+  if (!wifiSSID.isEmpty()) {
+    Serial.printf(" --> Connecting to WiFi \"%s\"", wifiSSID.c_str());
+    WiFi.begin(wifiSSID.c_str(), wifiPassword.c_str());
+    for (int i = 0; i < WIFI_POLL_TRIES && WiFi.status() != WL_CONNECTED; i++)
+    {
+      // Serial.printf("====================WiFi status: %d\n", WiFi.status());
+      // WiFi.printDiag(Serial);
+      Serial.printf(".");
+      delay(WIFI_POLL_DELAY);
+      // WiFi.printDiag(Serial);
+    }
+    Serial.printf("\n");
 
-    Serial.print(" --> WiFi connected, IP address: ");
-    Serial.println(ip);
+    if (WiFi.status() == WL_CONNECTED)
+    {
+      ip = WiFi.localIP();
+      snprintf(ssid, sizeof(ssid), "%s", wifiSSID.c_str());
+
+      Serial.print(" --> WiFi connected, IP address: ");
+      Serial.println(ip);
+    }
+    else
+    {
+      Serial.println(" --> Unable to connect to WiFi");
+    }
   }
-  else
-  {
-    Serial.println(" --> Unable to connect to WiFi");
-  }
-#endif
 
   if (WiFi.status() != WL_CONNECTED)
   {
+    WiFi.disconnect(true); // in case wifi client above fails, we don't get spam of: E (697790) wifi: esf_buf: t=2 l=76 max:32, alloc:32 no eb, TXQ_BLOCK=4000
+
     // format full SSID with MAC address suffix
     snprintf(ssid, sizeof(ssid), "%s%s", WIFI_AP_SSID_PREFIX, nodeAddress);
 
@@ -151,11 +159,10 @@ void setupWiFi()
 }
 
 void checkWiFi() {
-#ifdef WIFI_SSID
-  if (WiFi.status() != WL_CONNECTED) {
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  if (!wifiSSID.isEmpty() && WiFi.status() != WL_CONNECTED) {
+    // TODO: fix this
+    // WiFi.begin(wifiSSID.c_str(), wifiPassword.c_str());
   }
-#endif
 }
 
 void setupMDNS()
@@ -519,7 +526,23 @@ void setup()
   delay(200);
 
   // Get saved settings
-  getSettings();
+  if (!getSettings()) {
+    Serial.println("Settings not present");
+    #ifdef WIFI_SSID
+    #ifdef WIFI_PASSWORD
+    saveWifiSSID(WIFI_SSID);
+    saveWifiPassword(WIFI_PASSWORD);
+    wifiSSID = WIFI_SSID;
+    wifiPassword = WIFI_PASSWORD;
+    #endif
+    #endif
+    } else {
+    Serial.println("Settings loaded");
+  }
+  // saveWifiSSID(WIFI_SSID);
+  // saveWifiPassword(WIFI_PASSWORD);
+  // wifiSSID = WIFI_SSID;
+  // wifiPassword = WIFI_PASSWORD;
 
   setCpuFrequencyMhz(CLOCK_SPEED); //Set CPU clock in config.h
   getCpuFrequencyMhz(); //Get CPU clock
@@ -570,10 +593,9 @@ void loop()
       drawStatusBar();
     }
   }
-  // reconnect only in WiFi client mode 
-#ifdef WIFI_SSID
-  if (!useBLE) {
+  // reconnect only in WiFi client mode
+  // TOOD: check only every X seconds? 
+  if (!wifiSSID.isEmpty() && !useBLE) {
     checkWiFi();
   }
-#endif
 }

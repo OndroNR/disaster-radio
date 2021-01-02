@@ -57,6 +57,18 @@ void Console::uiUsage()
   printf("'ui'           - toggles between WiFi and BLE user interface\r\n\r\n");
 }
 
+void Console::wifiSSIDUsage()
+{
+  printf("'wifissid SSID' - wifi SSID \r\n\r\n");
+  // TODO:
+}
+
+void Console::wifiPasswordUsage()
+{
+  printf("'wifipwd PWD'  - wifi Password \r\n\r\n");
+  // TODO:
+}
+
 void Console::txpowerUsage()
 {
   printf("'txpower VAL'  - sets the transmit power of LoRa transceiver,\r\n");
@@ -103,6 +115,8 @@ void Console::setUsage()
 {
   printf("SETTINGs include,\r\n");
   uiUsage();
+  wifiSSIDUsage();
+  wifiPasswordUsage();
   txpowerUsage();
   lorafrqUsage();
   sfUsage();
@@ -131,6 +145,32 @@ void Console::uiSet()
   saveUI(!useBLE);
   delay(500);
   ESP.restart();
+}
+
+void Console::wifiSSIDSet(std::vector<char *> args)
+{
+  if (args.size() == 2) {
+    saveWifiSSID("");
+    printf("WiFi SSID cleared\r\n");
+  } else {
+    strtok(args[2], "\r"); // remove CR-LF from value
+    strtok(args[2], "\n"); // remove CR-LF from value
+    saveWifiSSID(String(args[2]));
+    printf("WiFi SSID '%s' saved\r\n", args[2]);
+  }
+}
+
+void Console::wifiPasswordSet(std::vector<char *> args)
+{
+  if (args.size() == 2) {
+    saveWifiPassword("");
+    printf("WiFi password cleared\r\n");
+  } else {
+    strtok(args[2], "\r"); // remove CR-LF from value
+    strtok(args[2], "\n"); // remove CR-LF from value
+    saveWifiPassword(String(args[2]));
+    printf("WiFi password saved\r\n");
+  }  
 }
 
 void Console::txpowerSet(std::vector<char *> args)
@@ -248,6 +288,14 @@ void Console::set(std::vector<char *> args)
   if (strncmp(&args[1][0], "ui", 2) == 0)
   {
     uiSet();
+  }
+  else if ((strncmp(&args[1][0], "wifissid", 8) == 0) && (args.size() >= 2))
+  {
+    wifiSSIDSet(args);
+  }
+  else if ((strncmp(&args[1][0], "wifipwd", 7) == 0) && (args.size() >= 2))
+  {
+    wifiPasswordSet(args);
   }
   else if ((strncmp(&args[1][0], "txpower", 7) == 0) && (args.size() > 2))
   {

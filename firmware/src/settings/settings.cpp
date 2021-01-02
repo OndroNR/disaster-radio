@@ -3,34 +3,51 @@
 Preferences preferences;
 
 String username = "";
-bool useBLE = true;
+String wifiSSID = "";
+String wifiPassword = "";
+bool useBLE = false;
 int txPower = 17;
-int loraFrq = 915;
-int spreadingFactor = 9;
+int loraFrq = 868;
+int spreadingFactor = 10;
 double dutyCycle = .1;
 long routeInterval = 10000;
 long beaconPeriod = 0;
 
-void getSettings(void)
+boolean getSettings(void)
 {
   if (!preferences.begin("dr", false))
   {
     Serial.println("Error opening preferences");
     nvs_flash_init();
-    return;
+    return false;
   }
 
   username = preferences.getString("un", "");
-
   if (username.isEmpty())
   {
-    Serial.println("No name saved");
+    Serial.println("No username saved");
+  } else {
+    Serial.printf("Got username %s\n", username.c_str());
   }
 
-  Serial.printf("Got username %s\n", username.c_str());
+  wifiSSID = preferences.getString("ws", "");
+  if (wifiSSID.isEmpty())
+  {
+    Serial.println("No WiFi SSID saved");
+  } else {
+    Serial.printf("Got WiFi SSID %s\n", wifiSSID.c_str());
+  }
+
+  wifiPassword = preferences.getString("wp", "");
+  if (wifiPassword.isEmpty())
+  {
+    Serial.println("No WiFi Password saved");
+  } else {
+    Serial.printf("Got WiFi Password: ***\n");
+  }
 
   // Try to get settings, if key does not exist, use default values
-  useBLE = preferences.getBool("ble", false);
+  useBLE = preferences.getBool("ble", useBLE);
   Serial.printf("Got IF setting %s\n", useBLE ? "BLE" : "WiFi");
   txPower = preferences.getInt("txPwr", txPower);
   Serial.printf("Got txPwr setting %d\n", txPower);
@@ -46,7 +63,7 @@ void getSettings(void)
   Serial.printf("Got gps setting %ld\n", beaconPeriod);
 
   preferences.end();
-  return;
+  return true;
 }
 
 void saveUsername(String newUserName)
@@ -65,6 +82,44 @@ void saveUsername(String newUserName)
   {
     preferences.putString("un", newUserName);
     //Serial.printf("Saved username '%s'\n", preferences.getString("un", "ERROR SAVING").c_str());
+  }
+  preferences.end();
+}
+
+void saveWifiSSID(String wifiSSID)
+{
+  if (!preferences.begin("dr", false))
+  {
+    Serial.println("Error opening preferences");
+    return;
+  }
+
+  if (wifiSSID.isEmpty())
+  {
+    preferences.remove("ws");
+  }
+  else
+  {
+    preferences.putString("ws", wifiSSID);
+  }
+  preferences.end();
+}
+
+void saveWifiPassword(String wifiPassword)
+{
+  if (!preferences.begin("dr", false))
+  {
+    Serial.println("Error opening preferences");
+    return;
+  }
+
+  if (wifiPassword.isEmpty())
+  {
+    preferences.remove("wp");
+  }
+  else
+  {
+    preferences.putString("wp", wifiPassword);
   }
   preferences.end();
 }
